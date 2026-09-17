@@ -1,0 +1,10 @@
+node_modules/
+dist/
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+../android-sdk/
+*.log
+.shots_tmp/
+qwen*.gguf

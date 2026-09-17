@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+    }
+
+    :root {
+      /* Paleta por defecto (morado/lavanda). Cambia solo estas variables
+         desde JS para recolorear la burbuja sin tocar el resto del CSS. */
+      --color-1: #2c1a4d;
+      --color-2: #6b46c1;
+      --color-3: #b794f6;
+      --color-4: #8f8fd9;
+      --color-5: #3b1f63;
+      --velocidad-giro: 6s;
+      --velocidad-pulso: 2.8s;
+    }
+
+    .burbuja {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      position: relative;
+      cursor: pointer;
+      -webkit-app-region: drag;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(107, 70, 193, 0.55);
+      animation: respirar-burbuja var(--velocidad-pulso) ease-in-out infinite;
+      transition: box-shadow .3s ease;
+    }
+
+    .burbuja::before {
+      content: '';
+      position: absolute;
+      inset: -20%;
+      background: conic-gradient(
+        from 0deg,
+        var(--color-1), var(--color-2), var(--color-3),
+        var(--color-4), var(--color-5), var(--color-1)
+      );
+      animation: girar var(--velocidad-giro) linear infinite;
+    }
+
+    .burbuja::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(0,0,0,0), rgba(0,0,0,.45) 75%);
+    }
+
+    /* Estado: AIRA está hablando -> gira más rápido y brilla más. */
+    .burbuja.hablando {
+      --velocidad-giro: 2.2s;
+      box-shadow: 0 0 30px rgba(183, 148, 246, 0.85);
+    }
+
+    /* Estado: AIRA está escuchando -> pulso más rápido y notorio. */
+    .burbuja.escuchando {
+      --velocidad-pulso: 0.9s;
+      box-shadow: 0 0 26px rgba(107, 70, 193, 0.95);
+    }
+
+    .burbuja span {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-app-region: no-drag;
+      z-index: 2;
+    }
+
+    .burbuja svg {
+      width: 34px;
+      height: 34px;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,.6));
+    }
+
+    .burbuja svg circle {
+      fill: white;
+      opacity: .92;
+    }
+
+    @keyframes girar {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes respirar-burbuja {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+  </style>
+</head>
+<body>
+  <div class="burbuja" id="burbuja">
+    <span>
+      <svg viewBox="0 0 200 200">
+        <circle cx="80"  cy="80"  r="46" />
+        <circle cx="120" cy="80"  r="46" />
+        <circle cx="80"  cy="120" r="46" />
+        <circle cx="120" cy="120" r="46" />
+      </svg>
+    </span>
+  </div>
+
+  <script src="bubble-renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ <meta charset="UTF-8" />
+ <style>
+    /* Ventana transparente a pantalla completa: solo se ve el avatar. */
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* El avatar: posicionado con left/top desde JS (posición en pantalla),
+       transform para el volteo y el squash & stretch del salto. */
+    #avatar-libre {
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      cursor: grab;
+      will-change: transform;
+      transform-origin: 50% 100%; /* el squash apoya en los "pies" */
+      /* La elevación del salto y su escala las escribe el JS cada frame. */
+      transform: translateY(var(--salto-y, 0px)) scale(var(--salto-escala, 1));
+    }
+
+    #avatar-libre img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      /* Sombra suave para despegarlo del fondo, sin caja visible. */
+      filter: drop-shadow(0 4px 10px rgba(30, 15, 60, 0.35));
+      /* El volteo izquierda/derecha se aplica aquí, para no pelear con el
+         squash & stretch del contenedor (cada uno su transform). */
+      transition: transform 0.25s ease;
+      transform: scaleX(var(--direccion, 1));
+    }
+
+    #avatar-3d {
+      display: none;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #avatar-libre.modo-3d #avatar-img { display: none; }
+    #avatar-libre.modo-3d #avatar-3d { display: block; }
+
+    #avatar-libre.reaccionando #avatar-img {
+      animation: gesto-atento 2.8s ease-in-out infinite;
+    }
+
+    #avatar-libre.hablando #avatar-img {
+      animation: gesto-hablando .72s ease-in-out infinite alternate;
+    }
+
+    #avatar-libre.escuchando #avatar-img {
+      animation: gesto-escuchando 1.8s ease-in-out infinite;
+    }
+
+    @keyframes gesto-atento {
+      0%, 100% { transform: scaleX(var(--direccion, 1)) rotate(0deg) translateY(0); }
+      50% { transform: scaleX(var(--direccion, 1)) rotate(1.5deg) translateY(-2px); }
+    }
+
+    @keyframes gesto-hablando {
+      from { transform: scaleX(var(--direccion, 1)) rotate(-1deg) translateY(0); }
+      to { transform: scaleX(var(--direccion, 1)) rotate(1deg) translateY(-3px); }
+    }
+
+    @keyframes gesto-escuchando {
+      0%, 100% { transform: scaleX(var(--direccion, 1)) rotate(0deg); }
+      35% { transform: scaleX(var(--direccion, 1)) rotate(-2deg); }
+      65% { transform: scaleX(var(--direccion, 1)) rotate(1deg); }
+    }
+
+    #avatar-libre.arrastrando { cursor: grabbing; }
+    /* Respiración sutil en reposo: sube/baja apenas, como si respirara o se
+       balanceara de pie. Se activa con la clase .idle que pone el JS en REPOSO. */
+    #avatar-libre.idle {
+      animation: respirar-idle 3.6s ease-in-out infinite;
+    }
+    @keyframes respirar-idle {
+      0%, 100% { transform: translateY(var(--salto-y, 0px)) scale(var(--salto-escala, 1)); }
+      50%      { transform: translateY(calc(var(--salto-y, 0px) - 5px)) scale(calc(var(--salto-escala, 1) * 1.02)); }
+    }
+
+    /* "Mirar alrededor": inclinación sutil del cuerpo de lado a lado,
+       como si estuviera atenta a su entorno. La clase .mirando la pone el JS
+       en reposo, alternando con .idle (nunca las dos a la vez). */
+    #avatar-libre.mirando {
+      animation: mirar-alrededor 4.2s ease-in-out infinite;
+    }
+    @keyframes mirar-alrededor {
+      0%, 100% { transform: translateY(var(--salto-y, 0px)) scale(var(--salto-escala, 1)) rotate(0deg); }
+      28%      { transform: translateY(var(--salto-y, 0px)) scale(var(--salto-escala, 1)) rotate(2.6deg); }
+      55%      { transform: translateY(var(--salto-y, 0px)) scale(var(--salto-escala, 1)) rotate(-2.4deg); }
+      78%      { transform: translateY(var(--salto-y, 0px)) scale(var(--salto-escala, 1)) rotate(1.2deg); }
+    }
+ </style>
+</head>
+<body>
+ <div id="avatar-libre">
+    <img id="avatar-img" src="assets/avatar/default/flotando.png" alt="AIRA" draggable="false" />
+    <canvas id="avatar-3d" aria-label="AIRA en 3D"></canvas>
+ </div>
+
+ <script src="avatar-renderer.js"></script>
+ <script type="importmap">
+  {
+    "imports": {
+      "three": "../node_modules/three/build/three.module.js",
+      "three/addons/": "../node_modules/three/examples/jsm/",
+      "@pixiv/three-vrm": "../node_modules/@pixiv/three-vrm/lib/three-vrm.module.js"
+    }
+  }
+ </script>
+ <script type="module" src="avatar-3d-renderer.js"></script>
+</body>
+</html>

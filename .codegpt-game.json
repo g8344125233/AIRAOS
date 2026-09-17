@@ -1,0 +1,26 @@
+{
+  "name": "AIRAOS",
+  "engine": "generic",
+  "launch": {
+    "cmd": "./node_modules/electron/dist/electron",
+    "args": [
+      ".",
+      "--no-sandbox",
+      "--disable-gpu",
+      "--disable-gpu-compositing",
+      "--in-process-gpu",
+      "--enable-logging"
+    ]
+  },
+  "log": {
+    "stdout": true
+  },
+  "ready": "Núcleo listo",
+  "sourceRoots": [
+    ".",
+    "main.js",
+    "preload.js",
+    "src"
+  ],
+  "vars": {}
+}

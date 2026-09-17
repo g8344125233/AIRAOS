@@ -1,0 +1,32 @@
+{
+  "name": "airaos",
+  "version": "1.0.0",
+  "description": "AIRAOS - IA asistente personal con avatar (Electron, HTML/JS)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:limpio": "env -u ELECTRON_RUN_AS_NODE -u ELECTRON_NO_ATTACH_CONSOLE electron . --no-sandbox --disable-gpu --disable-gpu-compositing --in-process-gpu",
+    "start:seguro": "env -u ELECTRON_RUN_AS_NODE -u ELECTRON_NO_ATTACH_CONSOLE electron . --no-sandbox --in-process-gpu --disable-gpu",
+    "start:virtual": "xvfb-run -a npm run start:limpio",
+    "doctor": "node scripts/doctor.js",
+    "test:exportadores": "node scripts/test-exportadores.js",
+    "package:zip": "node scripts/package.js",
+    "android:prepare": "node scripts/prepare-android.js && npx cap sync android",
+    "android:build": "npm run android:prepare && cd android && ./gradlew assembleDebug"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "electron": "^31.0.0",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@pixiv/three-vrm": "^3.5.5",
+    "docx": "^9.7.1",
+    "pdf-lib": "^1.17.1",
+    "pptxgenjs": "^4.0.1",
+    "three": "^0.186.0",
+    "xlsx": "^0.18.5"
+  }
+}

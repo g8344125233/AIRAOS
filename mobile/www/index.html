@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>AIRAOS</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Pantalla de inicio: se oculta sola después de un momento. -->
+  <main class="splash" id="splash">
+    <svg class="logo" viewBox="0 0 200 200" aria-hidden="true">
+      <circle class="c c1" cx="80"  cy="80"  r="46" />
+      <circle class="c c2" cx="120" cy="80"  r="46" />
+      <circle class="c c3" cx="80"  cy="120" r="46" />
+      <circle class="c c4" cx="120" cy="120" r="46" />
+    </svg>
+    <h1 class="titulo">AIRAOS</h1>
+    <p class="estado" id="estado">Iniciando núcleo…</p>
+  </main>
+
+  <!-- App principal: oculta hasta que termine el splash. -->
+  <div class="app oculto" id="app">
+
+    <header class="app-header">
+      <span class="app-header__titulo">AIRAOS</span>
+      <div class="app-header__botones">
+        <button id="btn-avatar" title="Cambiar modelo de AIRA">👗</button>
+        <button id="btn-hechos" title="Lo que AIRA recuerda de ti">🧠</button>
+        <button id="btn-temporizador" title="Temporizador">⏱️</button>
+        <button id="btn-notas" title="Notas rápidas">📝</button>
+        <button id="btn-recordatorios" title="Recordatorios">📅</button>
+        <button id="btn-voz" title="Voz de AIRA">🔊</button>
+        <button id="btn-optimizar" title="Optimizar este equipo">🛠️</button>
+        <button id="btn-musica" title="Música (Fase 4)">🎵</button>
+        <button id="btn-imagen" title="Estudio de imagen (Fase 4)">🖼️</button>
+        <button id="btn-config" title="Configuración">⚙</button>
+        <button id="btn-minimizar" title="Minimizar a burbuja">◡</button>
+      </div>
+    </header>
+
+    <div class="app-cuerpo">
+      <!-- Panel del avatar: una sola imagen que cambia de "pose". -->
+      <section class="panel-avatar" id="panel-avatar">
+        <div class="avatar-contenedor" id="avatar-contenedor">
+          <img id="avatar" class="avatar-img" src="" alt="AIRA" />
+        </div>
+      </section>
+
+      <!-- Panel de chat -->
+      <section class="panel-chat">
+        <div class="mensajes" id="mensajes"></div>
+
+        <form class="formulario-mensaje" id="form-mensaje">
+          <button type="button" id="btn-microfono" title="Hablarle a AIRA">🎤</button>
+          <input
+            type="text"
+            id="input-mensaje"
+            placeholder="Escríbele algo a AIRA…"
+            autocomplete="off"
+          />
+          <button type="submit">Enviar</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- Panel de música local (Fase 4, oculto por defecto) -->
+  <div class="modal-fondo oculto" id="modal-musica">
+    <div class="modal">
+      <h2>Música</h2>
+
+      <p class="modal__nota" id="musica-carpeta">
+        AIRA lee los archivos de audio de tu carpeta de Música. No descarga ni
+        reproduce nada de internet todavía — el descargador es una fase pendiente.
+      </p>
+
+      <div id="lista-musica" class="lista-musica">
+        <!-- Se llena dinámicamente desde renderer.js -->
+      </div>
+
+      <div class="reproductor">
+        <div class="reproductor__titulo" id="musica-titulo">Nada suena todavía.</div>
+        <div class="reproductor__controles">
+          <button type="button" id="musica-anterior" title="Anterior">⏮</button>
+          <button type="button" id="musica-play" title="Reproducir/Pausar">▶</button>
+          <button type="button" id="musica-siguiente" title="Siguiente">⏭</button>
+        </div>
+        <input type="range" id="musica-progreso" min="0" max="100" value="0" step="0.1" />
+        <div class="reproductor__tiempo">
+          <span id="musica-tiempo-actual">0:00</span>
+          <span id="musica-duracion">0:00</span>
+        </div>
+        <label class="reproductor__volumen">
+          🔉
+          <input type="range" id="musica-volumen" min="0" max="1" step="0.01" value="0.8" />
+        </label>
+      </div>
+
+      <div class="modal__botones">
+        <button type="button" id="musica-cerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estudio de imagen: generar con modelo local o online (Fase 4) -->
+  <div class="modal-fondo oculto" id="modal-imagen">
+    <div class="modal">
+      <h2>Estudio de imagen</h2>
+
+      <p class="modal__nota" id="imagen-motor">
+        Detectando motor de generación…
+      </p>
+
+      <form id="form-imagen" class="modal__campo">
+        <input type="text" id="imagen-prompt" placeholder="Describe la imagen: ej. 'un gato astronauta en la luna'" />
+        <div class="modal__botones">
+          <button type="button" id="imagen-cerrar">Cerrar</button>
+          <button type="submit" id="imagen-generar">Generar</button>
+        </div>
+      </form>
+
+      <div class="imagen-resultado" id="imagen-resultado">
+        <p class="modal__nota">Aquí verás la imagen cuando la generes.</p>
+      </div>
+
+      <div class="modal__botones oculto" id="imagen-acciones">
+        <button type="button" id="imagen-guardar">💾 Guardar en tu equipo</button>
+      </div>
+
+      <p class="modal__nota">
+        Local primero: si tienes Automatic1111 (puerto 7860) o ComfyUI (8188)
+        corriendo, AIRA los usa. Si no, usa un servicio online gratuito sin
+        API key (Pollinations.ai) — en ese caso el prompt sale de tu equipo.
+      </p>
+    </div>
+  </div>
+
+  <!-- Panel de configuración (oculto por defecto) -->
+  <div class="modal-fondo oculto" id="modal-config">
+    <div class="modal">
+      <h2>Configuración</h2>
+
+      <label class="modal__campo">
+        Proveedor de IA
+        <select id="config-proveedor">
+          <option value="mock">Ninguno (respuestas de prueba)</option>
+          <option value="ollama">Ollama local</option>
+          <option value="lmstudio">LM Studio local</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
+      </label>
+
+      <label class="modal__campo">
+        API Key
+        <input type="password" id="config-apikey" placeholder="Pega aquí tu API key" />
+      </label>
+
+      <label class="modal__campo">
+        URL del cerebro local
+        <input type="url" id="config-endpoint-local" value="http://127.0.0.1:11434" placeholder="http://127.0.0.1:11434" />
+      </label>
+
+      <label class="modal__campo">
+        Modelo local
+        <input type="text" id="config-modelo-local" value="qwen2.5:1.5b" placeholder="qwen2.5:1.5b" />
+      </label>
+
+      <p class="modal__nota" id="estado-cerebro-local">
+        El estado del motor local se comprobará al abrir esta configuración.
+      </p>
+
+      <label class="modal__campo">
+        ¿Cómo te llamas? (opcional)
+        <input type="text" id="config-nombre" placeholder="Tu nombre, para que AIRA se dirija a ti" />
+      </label>
+
+      <label class="modal__campo">
+        Avatar libre (ventana flotante en toda la pantalla)
+        <select id="config-avatar-libre">
+          <option value="si">Activado (el panel de aquí se oculta)</option>
+          <option value="no">Desactivado (solo el avatar de este panel)</option>
+        </select>
+      </label>
+
+      <div class="modal__campo">
+        Color de la burbuja
+        <div class="paletas-burbuja" id="paletas-burbuja">
+          <button type="button" class="paleta-opcion" data-paleta="morado" title="Morado (por defecto)"></button>
+          <button type="button" class="paleta-opcion" data-paleta="siri" title="Estilo Siri (azul/rosa)"></button>
+          <button type="button" class="paleta-opcion" data-paleta="gemini" title="Estilo Gemini (azul/verde)"></button>
+          <button type="button" class="paleta-opcion" data-paleta="gris" title="Gris formal"></button>
+        </div>
+      </div>
+
+      <p class="modal__nota">
+        Tu API key se guarda solo en este dispositivo. Consíguela gratis en
+        aistudio.google.com/apikey si eliges Gemini.
+      </p>
+
+      <div class="modal__botones">
+        <button type="button" id="config-cancelar">Cancelar</button>
+        <button type="button" id="config-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+   <!-- Panel de selección de avatar (oculto por defecto) -->
+ <div class="modal-fondo oculto" id="modal-avatar">
+    <div class="modal">
+      <h2>Modelo de AIRA</h2>
+      <p class="modal__nota">
+        Elige con qué modelo quieres ver a AIRA. Se guardará para la próxima vez.
+      </p>
+      <div id="lista-modelos" class="lista-modelos">
+        <!-- Se llena dinámicamente desde renderer.js -->
+      </div>
+      <div class="modal__botones">
+        <button type="button" id="avatar-cerrar">Cerrar</button>
+      </div>
+    </div>
+ </div>
+
+  <!-- Panel de temporizador / Pomodoro (oculto por defecto) -->
+ <div class="modal-fondo oculto" id="modal-temporizador">
+    <div class="modal">
+      <h2>Temporizador</h2>
+
+      <div class="pomodoro-modos">
+        <button type="button" class="pomodoro-modo" data-modo="enfoque">🎯 Enfoque 25m</button>
+        <button type="button" class="pomodoro-modo" data-modo="pausa">☕ Pausa 5m</button>
+        <button type="button" class="pomodoro-modo" data-modo="pausa-larga">🌿 Pausa larga 15m</button>
+      </div>
+
+      <div class="pomodoro-reloj" id="temporizador-reloj">25:00</div>
+      <p class="pomodoro-estado" id="temporizador-estado">Sin temporizador activo.</p>
+
+      <form id="form-temporizador" class="modal__campo">
+        <input type="text" id="temporizador-texto" placeholder="Temporizador libre: ej. 'estudiar 10 minutos'" />
+        <div class="modal__botones">
+          <button type="button" id="temporizador-pausar">Pausar</button>
+          <button type="submit">Iniciar</button>
+        </div>
+      </form>
+
+      <div class="modal__botones">
+        <button type="button" id="temporizador-cancelar">Cancelar</button>
+        <button type="button" id="temporizador-cerrar">Cerrar</button>
+      </div>
+    </div>
+ </div>
+
+  <!-- Panel de optimización del equipo (oculto por defecto) -->
+ <div class="modal-fondo oculto" id="modal-optimizar">
+     <div class="modal">
+       <h2>Optimizar este equipo</h2>
+
+       <div id="optimizar-diagnostico" class="optimizar-diagnostico">
+         <!-- Se llena dinámicamente desde renderer.js -->
+       </div>
+
+       <div id="optimizar-consejos" class="optimizar-consejos">
+         <!-- Consejos generados según el equipo -->
+       </div>
+
+       <p class="modal__nota">
+         AIRA analiza tu equipo para funcionar mejor en él. No cambia nada de tu
+         sistema por su cuenta: te recomienda, y tú decides.
+       </p>
+
+       <div class="modal__botones">
+         <button type="button" id="optimizar-cerrar">Cerrar</button>
+       </div>
+     </div>
+ </div>
+
+  <!-- Panel de voz: elegir la voz de AIRA (oculto por defecto) -->
+ <div class="modal-fondo oculto" id="modal-voz">
+     <div class="modal">
+       <h2>Voz de AIRA</h2>
+
+       <label class="modal__campo">
+         <span>
+           Voz
+           <button type="button" id="voz-probar" class="boton-mini">🔈 Probar</button>
+         </span>
+         <select id="voz-selector">
+           <!-- Se llena dinámicamente desde renderer.js -->
+         </select>
+       </label>
+
+       <label class="modal__campo">
+         Velocidad de habla: <span id="voz-velocidad-valor">1.0</span>x
+         <input type="range" id="voz-velocidad" min="0.5" max="2" step="0.1" value="1" />
+       </label>
+
+       <label class="modal__campo">
+         Tono: <span id="voz-tono-valor">1.0</span>
+         <input type="range" id="voz-tono" min="0.5" max="2" step="0.1" value="1" />
+       </label>
+
+       <p class="modal__nota" id="voz-nota">
+         Elige la voz con la que AIRA te habla. Las voces disponibles las pone tu sistema.
+       </p>
+
+       <div class="modal__botones">
+         <button type="button" id="voz-cerrar">Cerrar</button>
+         <button type="button" id="voz-guardar">Guardar voz</button>
+       </div>
+     </div>
+ </div>
+
+  <!-- Panel de notas rápidas (oculto por defecto) -->
+  <div class="modal-fondo oculto" id="modal-notas">
+     <div class="modal">
+       <h2>Notas rápidas</h2>
+
+       <div id="lista-notas" class="lista-notas">
+         <!-- Se llena dinámicamente desde renderer.js -->
+       </div>
+
+       <form id="form-nota" class="modal__campo">
+         <textarea id="nota-texto" rows="3" placeholder="Escribe una nota rápida…"></textarea>
+         <div class="modal__botones">
+           <button type="button" id="notas-cerrar">Cerrar</button>
+           <button type="submit">Guardar nota</button>
+         </div>
+       </form>
+     </div>
+  </div>
+
+    <!-- Panel de memoria de AIRA: lo que recuerda de ti (oculto por defecto) -->
+   <div class="modal-fondo oculto" id="modal-hechos">
+       <div class="modal">
+         <h2>Lo que AIRA recuerda de ti</h2>
+
+         <div id="lista-hechos" class="lista-hechos">
+           <!-- Se llena dinámicamente desde renderer.js -->
+         </div>
+
+         <form id="form-hecho" class="modal__campo">
+           <input type="text" id="hecho-texto" placeholder="Algo que AIRA deba recordar (ej. 'me gusta el café')" />
+           <div class="modal__botones">
+             <button type="button" id="hechos-cerrar">Cerrar</button>
+             <button type="submit">Anotar</button>
+           </div>
+         </form>
+
+         <p class="modal__nota">
+           También puedes decirlo en el chat: “recuerda que me gusta el café”.
+         </p>
+       </div>
+   </div>
+
+     <!-- Panel de recordatorios (oculto por defecto) -->
+   <div class="modal-fondo oculto" id="modal-recordatorios">
+    <div class="modal">
+      <h2>Recordatorios</h2>
+
+      <div id="lista-recordatorios" class="lista-recordatorios">
+        <!-- Se llena dinámicamente desde renderer.js -->
+      </div>
+
+      <form id="form-recordatorio" class="modal__campo">
+        <input type="text" id="recordatorio-texto" placeholder="¿Qué quieres que te recuerde?" />
+        <input type="datetime-local" id="recordatorio-fecha" />
+        <div class="modal__botones">
+          <button type="button" id="recordatorios-cerrar">Cerrar</button>
+          <button type="submit">Agregar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="airaos-mobile-bridge.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
